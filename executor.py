@@ -54,7 +54,7 @@ def downloadIter(noFirst = False,start = 1,offset = 1,add = False,firstSet = Fal
     '''connect and fetching and download iterative
     add = if add 0,firstSet = if special deal with first page url,eachDir = if every url file save in the same dir'''
     '''递归的连接并爬取和下载
-    noFirst:第一页是否包含页数，不少网站套图的第一页是没有页数的
+    noFirst:第一页是否包含页数，不少网站帖子的第一页是没有页数的
     start：起始页数
     offset：结束页数
     add：页数小于10是否前面加0
