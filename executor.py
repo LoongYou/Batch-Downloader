@@ -7,26 +7,36 @@ import os
 
 #--------------------------------config-------------------------------
 
-#your hostname 你想爬取的连接主机名，可以理解为不变的部分,如：
-host = 'http://aaa.net/bbbl/2017/photo/'
-#special first page(if has),not include hostname 第一页不一样的部分
-firstPage = '2850'
-#the same of every url,not include hostname 此后每一页都一样的部分
-generalPage = '2850_'
+#your hostname 你想爬取的页面连接主机名，可以理解URL为不变的部分，www.baidu.com/hello/
+host = ''
+#special first page(if has),not include hostname 第一页不一样的部分，如www.baidu.com/hello.html是第一页而不是/1.html是第一页
+firstPage = ''
+#the same of every url,not include hostname 此后每一页都一样的部分,如www.baidu.com/lib_2.html 或 lib_3.html中的lib_
+generalPage = ''
 #the page type 页面后缀
 pageSuffix = '.html'
 #the local path that to the download file 文件保存路径
 saveDir = 'D:\\image\\' 
-#目标元素类型
+#搜索匹配模式：1、根据elementType的key模糊匹配  2、属性（标签无关）
+searchModel = 1
+#目标资源类型
 targetType = 'img'
-#the tag to mathch 用于匹配的目标元素的属性
-attrs = {'alt':'[photo]beauty'}
-#要获取匹配元素的目标属性
+#目标元素标签，如果为空，则会使用标签查找结合attrs中的值模糊查找，否则根据attrs查找
+elementType='img'
+#属性
+key = 'alt'
+#the tag to mathch 用于匹配的目标元素的属性，如img中的alt=人工智能，那么将其填入下面键值对中
+attrs = {key:''}
+#要获取匹配元素的目标属性，例如获取img中src的值
 targetAtt = 'src'
 #起始页
 start = 1
 #结束页
-offset = 11
+offset = 35
+#第一页是否包含页数，不少网站帖子的第一页是没有页数的
+noFirst = False
+#第一页url是否跟后面页数不一样，如果不一样则使用firstPage给定的url
+firstSet = True
 
 
 #--------------------------------program----------------------------------
@@ -75,8 +85,10 @@ def downloadIter(noFirst = False,start = 1,offset = 1,add = False,firstSet = Fal
             else:
                 url = getPage()+index+pageSuffix
         print '>>>>>>>>>>>>>downloadPage:'+url
-        downloader.Referer = 'url'
+        downloader.initRefere(url)
         html = downloader.downloadDate(url)
+        if not html:
+            return False
         bs = BeautifulSoup(html,'lxml')
         if eachDir:
             pindex = index
@@ -96,13 +108,24 @@ def downloadIter(noFirst = False,start = 1,offset = 1,add = False,firstSet = Fal
       
 def downloadFind(bs,name=None, attrs={}, recursive=True, text=None, limit=None):
     '''matching pattern and return the list of result'''
-    res = bs.find_all(name, attrs, recursive, text, limit)
-    print 'search result:'
-    for item in res:
-        print item
+    if searchModel==1:
+        print 'finding element'
+        res = bs.find_all(elementType)
+        for item in res:
+            if attrs[key] not in item:
+                print 'remove item:'+str(item)
+                res.remove(item)
+            else:
+                print 'matched item:'+str(item)
+    else:
+        if searchModel==2:
+            res = bs.find_all(name, attrs, recursive, text, limit)
+            print 'search result:'
+            for item in res:
+                print item
     print '============================================'
     return res
 
 #start your batch download
-downloadIter(True,start,offset,firstSet = True)
+downloadIter(noFirst,start,offset,False,firstSet)
 
